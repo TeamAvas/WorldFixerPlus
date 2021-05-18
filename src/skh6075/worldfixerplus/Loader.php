@@ -10,7 +10,7 @@ use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 use skh6075\worldfixerplus\command\WorldFixerExecuteCommand;
-use skh6075\worldfixerplus\task\ChnageBlockAsyncTask;
+use skh6075\worldfixerplus\task\ChangeBlockAsyncTask;
 
 final class Loader extends PluginBase implements Listener{
     use SingletonTrait;
@@ -41,7 +41,7 @@ final class Loader extends PluginBase implements Listener{
 
     public function onUseWorldFixer(Player $player): void{
         $fixer = $this->getWorldFixerTool($player);
-        $this->getServer()->getAsyncPool()->submitTask(new ChnageBlockAsyncTask($player->getName(), $fixer->toAsyncBinaries(), $fixer->getWorld(), $fixer->getMinPos(), $fixer->getMaxPos()));
+        $this->getServer()->getAsyncPool()->submitTask(new ChangeBlockAsyncTask($player->getName(), $fixer->toAsyncBinaries(), $fixer->getWorld(), $fixer->getMinPos(), $fixer->getMaxPos()));
     }
 
     public function onPlayerInteract(PlayerInteractEvent $event): void{
