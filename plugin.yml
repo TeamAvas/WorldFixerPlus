@@ -1,0 +1,10 @@
+name: WorldFixerPlus
+main: skh6075\worldfixerplus\Loader
+author: AvasKr
+version: 1.0.0
+api: 4.0.0
+website: https://github.com/GodVas
+
+permissions:
+  world.fixer.permission:
+    default: op
