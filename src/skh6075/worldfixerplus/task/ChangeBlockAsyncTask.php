@@ -12,7 +12,7 @@ use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 
-final class ChnageBlockAsyncTask extends AsyncTask{
+final class ChangeBlockAsyncTask extends AsyncTask{
 
     private const REPLACED_BLOCK = [
         158 => [BlockLegacyIds::WOODEN_SLAB, 0],
