@@ -10,6 +10,7 @@ use pocketmine\scheduler\AsyncTask;
 use pocketmine\Server;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use pocketmine\world\utils\SubChunkExplorer;
 use pocketmine\world\World;
 
 final class ChangeBlockAsyncTask extends AsyncTask{
@@ -38,9 +39,7 @@ final class ChangeBlockAsyncTask extends AsyncTask{
     private string $playerName;
 
     /** @var string[] */
-    private array $chunks = [];
-
-    private World $world;
+    private array $chunks;
 
     private Vector3 $startPos;
 
@@ -52,10 +51,9 @@ final class ChangeBlockAsyncTask extends AsyncTask{
 
     private int $totalCount;
 
-    public function __construct(string $playerName, array $chunks, World $world, Vector3 $startPos, Vector3 $endPos) {
+    public function __construct(string $playerName, array $chunks, Vector3 $startPos, Vector3 $endPos) {
         $this->playerName = $playerName;
         $this->chunks = $chunks;
-        $this->world = $world;
         $this->startPos = $startPos;
         $this->endPos = $endPos;
         $this->startTime = microtime(true);
@@ -71,23 +69,20 @@ final class ChangeBlockAsyncTask extends AsyncTask{
         for ($x = $this->startPos->getX(); $x < $this->endPos->getX(); $x ++) {
             for ($z = $this->startPos->getZ(); $z < $this->endPos->getZ(); $z ++) {
                 $hash = World::chunkHash($x >> 4, $z >> 4);
-                $chunk = $chunks[$hash] ?? null;
-                if (!$chunk instanceof Chunk)
+                if (!($chunk = $chunks[$hash] ?? null) instanceof Chunk)
                     continue;
 
                 for ($y = $this->startPos->getY(); $y < $this->endPos->getY(); $y ++) {
-                    $this->world->setChunk($x << 4, $z << 4, $chunk);
-                    $block = $this->world->getBlockAt($x, $y, $z);
-                    if (!in_array($block->getId(), array_keys(self::REPLACED_BLOCK)))
+                    $subChunk = $chunk->getSubChunk($y);
+                    $fullBlock = $subChunk->getFullBlock($x & 0xf, $y & 0xf, $z & 0xf);
+                    $id = $fullBlock >> 4;
+                    $meta = $fullBlock & 0xf;
+                    if (!in_array($id, array_keys(self::REPLACED_BLOCK)))
                         continue;
 
-                    $data = self::REPLACED_BLOCK[$block->getId()];
-                    $newBlock = BlockFactory::getInstance()->get(
-                        $data[0],
-                        $data[1] ?? $block->getMeta()
-                    );
-
-                    $this->world->setBlockAt($x, $y, $z, $newBlock);
+                    $data = self::REPLACED_BLOCK[$id];
+                    $newBlock = BlockFactory::getInstance()->get($data[0], $data[1] ?? $meta);
+                    $subChunk->setFullBlock($x & 0xf, $y & 0xf, $z & 0xf, $newBlock->getId() << 4 | $newBlock->getMeta());
                     ++ $totalCount;
                 }
             }
@@ -99,7 +94,7 @@ final class ChangeBlockAsyncTask extends AsyncTask{
 
     public function onCompletion(): void{
         if (($player = Server::getInstance()->getPlayerExact($this->playerName)) instanceof Player) {
-            $player->sendMessage("All blocks have been replaced. [time: " . round($this->endTime, 3) . ", chnagedBlocks: " . $this->totalCount . "]");
+            $player->sendMessage("All blocks have been replaced. [time: " . round($this->endTime, 3) . ", changedBlocks: " . $this->totalCount . "]");
         }
     }
 }
