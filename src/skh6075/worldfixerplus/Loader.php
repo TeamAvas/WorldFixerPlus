@@ -41,7 +41,7 @@ final class Loader extends PluginBase implements Listener{
 
     public function onUseWorldFixer(Player $player): void{
         $fixer = $this->getWorldFixerTool($player);
-        $this->getServer()->getAsyncPool()->submitTask(new ChangeBlockAsyncTask($player->getName(), $fixer->toAsyncBinaries(), $fixer->getWorld(), $fixer->getMinPos(), $fixer->getMaxPos()));
+        $this->getServer()->getAsyncPool()->submitTask(new ChangeBlockAsyncTask($player->getName(), $fixer->toAsyncBinaries(), $fixer->getMinPos(), $fixer->getMaxPos()));
     }
 
     public function onPlayerInteract(PlayerInteractEvent $event): void{
