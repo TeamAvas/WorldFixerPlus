@@ -71,8 +71,4 @@ final class SelectedSection{
 
         return $chunks;
     }
-
-    public function getWorld(): World{
-        return $this->world;
-    }
 }
